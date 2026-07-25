@@ -256,7 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
       card.addEventListener("click", (e) => {
         if (e.target.closest(".card-fav-btn")) return;
         loadStream(ch);
-        window.scrollTo({ top: 0, behavior: "smooth" });
       });
 
       const cardFavBtn = card.querySelector(".card-fav-btn");
