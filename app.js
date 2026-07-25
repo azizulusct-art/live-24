@@ -446,9 +446,72 @@ document.addEventListener("DOMContentLoaded", () => {
         renderChannelsGrid();
         loadStream(newChannel);
         showToast(`Channel "${name}" with custom logo added successfully! 🎉`, "success");
-        window.scrollTo({ top: 0, behavior: "smooth" });
       });
     }
+  }
+
+  /* Download App Modal Handlers */
+  const downloadAppBtn = document.getElementById("download-app-btn");
+  const downloadAppModal = document.getElementById("download-app-modal");
+  const closeDownloadModal = document.getElementById("close-download-modal");
+  const dlMobileApk = document.getElementById("dl-mobile-apk");
+  const dlTvApk = document.getElementById("dl-tv-apk");
+  const pwaInstallBtn = document.getElementById("pwa-install-btn");
+
+  if (downloadAppBtn && downloadAppModal) {
+    downloadAppBtn.addEventListener("click", () => downloadAppModal.classList.remove("hidden"));
+    if (closeDownloadModal) closeDownloadModal.addEventListener("click", () => downloadAppModal.classList.add("hidden"));
+    downloadAppModal.addEventListener("click", (e) => {
+      if (e.target === downloadAppModal) downloadAppModal.classList.add("hidden");
+    });
+  }
+
+  function triggerDummyDownload(filename) {
+    const dummyContent = "StreamPulse TV Android Application Installer Package v2.4.0";
+    const blob = new Blob([dummyContent], { type: "application/vnd.android.package-archive" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  if (dlMobileApk) {
+    dlMobileApk.addEventListener("click", () => {
+      showToast("Downloading StreamPulse Mobile APK (18.5 MB)... 🚀", "success");
+      triggerDummyDownload("StreamPulse_Mobile_v2.4.0.apk");
+    });
+  }
+
+  if (dlTvApk) {
+    dlTvApk.addEventListener("click", () => {
+      showToast("Downloading StreamPulse Android TV APK (21.2 MB)... 📺", "success");
+      triggerDummyDownload("StreamPulse_TV_Edition_v2.4.0.apk");
+    });
+  }
+
+  let deferredPrompt = null;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  if (pwaInstallBtn) {
+    pwaInstallBtn.addEventListener("click", async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") {
+          showToast("StreamPulse Web App installed successfully! 🎉", "success");
+        }
+        deferredPrompt = null;
+      } else {
+        showToast("To install: Open Chrome menu (⋮) -> Select 'Install StreamPulse TV' or 'Add to Home Screen'.", "info");
+      }
+    });
   }
 
   /* ==========================================================================
