@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StreamPulse TV | Admin Management & Settings Portal</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Admin Login Screen -->
+  <div id="admin-login-screen" class="admin-login-overlay">
+    <div class="admin-login-card">
+      <div class="brand-icon-wrapper red-glow" style="margin: 0 auto 16px auto;">
+        <i class="fa-solid fa-user-shield brand-icon"></i>
+      </div>
+      <h2 style="font-family: var(--font-heading); font-size: 1.6rem; text-align: center; margin-bottom: 6px;">Admin Access</h2>
+      <p style="color: var(--text-muted); font-size: 0.88rem; text-align: center; margin-bottom: 24px;">Enter Admin Security Passcode to manage channels, apps & settings.</p>
+      
+      <form id="admin-login-form" style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: var(--text-muted);">ADMIN PASSCODE</label>
+          <input type="password" id="admin-passcode-input" placeholder="Enter Passcode (Default: admin123)" required style="width: 100%; padding: 12px 16px; background: rgba(15,23,42,0.9); border: 1px solid var(--border-glass); border-radius: var(--radius-md); color: #fff; font-size: 1rem; outline: none;">
+        </div>
+        <button type="submit" class="apk-download-btn" style="background: var(--primary-gradient);">
+          <i class="fa-solid fa-lock-open"></i> Unlock Dashboard
+        </button>
+      </form>
+      <div style="text-align: center; margin-top: 18px;">
+        <a href="index.html" style="color: var(--accent-blue); text-decoration: none; font-size: 0.85rem; font-weight: 600;"><i class="fa-solid fa-arrow-left"></i> Back to Main Live TV Site</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Admin Dashboard UI -->
+  <div id="admin-dashboard-ui" class="hidden">
+    
+    <!-- Top Admin Header -->
+    <header class="navbar">
+      <div class="nav-container">
+        <div class="brand" onclick="window.location.href='index.html'">
+          <div class="brand-icon-wrapper">
+            <i class="fa-solid fa-play brand-icon"></i>
+          </div>
+          <div class="brand-text">
+            <span class="logo-title">Stream<span class="highlight">Pulse</span></span>
+            <span class="logo-subtitle">ADMIN CONTROL CENTER</span>
+          </div>
+        </div>
+
+        <div class="nav-actions">
+          <a href="index.html" class="nav-btn primary" style="text-decoration: none;">
+            <i class="fa-solid fa-eye"></i>
+            <span>View Live Site</span>
+          </a>
+          <button id="admin-logout-btn" class="nav-btn" style="border-color: var(--live-red); color: var(--live-red);">
+            <i class="fa-solid fa-power-off"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs Bar -->
+    <nav class="category-bar" style="background: rgba(10,14,26,0.95); border-bottom: 1px solid var(--border-glass);">
+      <div class="category-container">
+        <button class="cat-chip admin-tab-btn active" data-tab="tab-channels">
+          <i class="fa-solid fa-tv"></i> Channel Management
+        </button>
+        <button class="cat-chip admin-tab-btn" data-tab="tab-apps">
+          <i class="fa-solid fa-cloud-arrow-up"></i> APK App Releases & Upload
+        </button>
+        <button class="cat-chip admin-tab-btn" data-tab="tab-settings">
+          <i class="fa-solid fa-gear"></i> System Settings
+        </button>
+      </div>
+    </nav>
+
+    <!-- Admin Content Area -->
+    <main class="app-layout" style="margin-top: 24px;">
+      
+      <!-- ===================================================================
+           TAB 1: CHANNEL MANAGEMENT
+           =================================================================== -->
+      <div id="tab-channels" class="admin-tab-content">
+        <!-- Quick Stats Row -->
+        <div class="admin-stats-grid">
+          <div class="admin-stat-card">
+            <div class="stat-icon purple"><i class="fa-solid fa-tv"></i></div>
+            <div class="stat-info">
+              <h3 id="stat-total-channels">0</h3>
+              <p>Total Channels</p>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="stat-icon red"><i class="fa-solid fa-tower-cell"></i></div>
+            <div class="stat-info">
+              <h3 id="stat-hls-streams">0</h3>
+              <p>Live HLS (.m3u8) Streams</p>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-info">
+              <h3 id="stat-total-viewers">0K</h3>
+              <p>Estimated Viewers</p>
+            </div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="stat-icon green"><i class="fa-solid fa-folder-tree"></i></div>
+            <div class="stat-info">
+              <h3 id="stat-categories-count">8</h3>
+              <p>Active Categories</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action & Filter Bar -->
+        <div class="admin-control-bar">
+          <div class="search-box" style="max-width: 380px;">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="admin-search-input" placeholder="Search channel name or stream URL..." autocomplete="off">
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <select id="admin-cat-filter" style="padding: 10px 16px; background: rgba(15,23,42,0.9); border: 1px solid var(--border-glass); border-radius: var(--radius-pill); color: #fff; outline: none; font-size: 0.88rem;">
+              <option value="all">All Categories</option>
+              <option value="news">News</option>
+              <option value="sports">Sports</option>
+              <option value="movies">Movies</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="music">Music</option>
+              <option value="documentary">Documentary</option>
+              <option value="kids">Kids</option>
+              <option value="islamic">Islamic</option>
+            </select>
+
+            <button id="open-add-modal-btn" class="nav-btn primary accent-gradient">
+              <i class="fa-solid fa-plus"></i> Add New Channel
+            </button>
+
+            <button id="export-m3u-btn" class="nav-btn" style="background: rgba(255,255,255,0.06);">
+              <i class="fa-solid fa-file-export"></i> Export .m3u
+            </button>
+            
+            <button id="open-import-modal-btn" class="nav-btn" style="background: rgba(255,255,255,0.06);">
+              <i class="fa-solid fa-file-import"></i> Bulk M3U Import
+            </button>
+          </div>
+        </div>
+
+        <!-- Channels Management Table -->
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Logo</th>
+                <th>Channel Name</th>
+                <th>Category</th>
+                <th>Quality</th>
+                <th>Stream URL</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-channels-tbody">
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           TAB 2: APK APP RELEASES & UPLOAD CENTER (Ultra-Premium Design)
+           =================================================================== -->
+      <div id="tab-apps" class="admin-tab-content hidden">
+        <div class="section-header" style="margin-bottom: 24px;">
+          <div class="section-title">
+            <h2><i class="fa-solid fa-cloud-arrow-up"></i> APK App Releases & Upload Center</h2>
+            <p>Upload Android APK files or configure download links for Mobile & Smart TV users.</p>
+          </div>
+        </div>
+
+        <form id="admin-app-release-form">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+            
+            <!-- Mobile App Release Card -->
+            <div class="admin-upload-card">
+              <div class="upload-card-header">
+                <div class="app-card-icon red-glow"><i class="fa-brands fa-android"></i></div>
+                <div>
+                  <h3>Android Mobile App</h3>
+                  <p>Supports Android Phones & Tablets</p>
+                </div>
+              </div>
+
+              <div class="upload-card-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div>
+                    <label class="form-label">Version Name</label>
+                    <input type="text" id="admin-mobile-ver" value="v2.4.0" class="form-input" required>
+                  </div>
+                  <div>
+                    <label class="form-label">File Size</label>
+                    <input type="text" id="admin-mobile-size" value="18.5 MB" class="form-input" required>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="form-label">Direct APK Download Link URL</label>
+                  <input type="url" id="admin-mobile-url" placeholder="https://yourserver.com/StreamPulse_Mobile.apk" class="form-input">
+                </div>
+
+                <div>
+                  <label class="form-label">OR Drag & Upload Mobile APK File</label>
+                  <div class="file-upload-zone" onclick="document.getElementById('admin-mobile-file').click();">
+                    <i class="fa-solid fa-file-arrow-up upload-zone-icon"></i>
+                    <span id="mobile-file-name">Click to choose Mobile .apk file</span>
+                    <small>Maximum size: 100 MB</small>
+                    <input type="file" id="admin-mobile-file" accept=".apk" style="display: none;">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Android TV App Release Card -->
+            <div class="admin-upload-card">
+              <div class="upload-card-header">
+                <div class="app-card-icon purple-glow"><i class="fa-solid fa-tv"></i></div>
+                <div>
+                  <h3>Android TV & Firestick App</h3>
+                  <p>Optimized for Smart TV D-Pad Remote</p>
+                </div>
+              </div>
+
+              <div class="upload-card-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div>
+                    <label class="form-label">TV Version Name</label>
+                    <input type="text" id="admin-tv-ver" value="v2.4.0 TV" class="form-input" required>
+                  </div>
+                  <div>
+                    <label class="form-label">TV File Size</label>
+                    <input type="text" id="admin-tv-size" value="21.2 MB" class="form-input" required>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="form-label">Direct TV APK Download Link URL</label>
+                  <input type="url" id="admin-tv-url" placeholder="https://yourserver.com/StreamPulse_TV.apk" class="form-input">
+                </div>
+
+                <div>
+                  <label class="form-label">OR Drag & Upload TV APK File</label>
+                  <div class="file-upload-zone" onclick="document.getElementById('admin-tv-file').click();">
+                    <i class="fa-solid fa-tv upload-zone-icon" style="color: var(--primary);"></i>
+                    <span id="tv-file-name">Click to choose Smart TV .apk file</span>
+                    <small>Maximum size: 100 MB</small>
+                    <input type="file" id="admin-tv-file" accept=".apk" style="display: none;">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- PWA Configuration Section -->
+          <div class="admin-upload-card" style="margin-top: 24px;">
+            <div class="upload-card-header">
+              <div class="app-card-icon" style="background: linear-gradient(135deg, #0ea5e9, #38bdf8);"><i class="fa-solid fa-globe"></i></div>
+              <div>
+                <h3>Progressive Web App (PWA) Settings</h3>
+                <p>Web browser instant installation settings</p>
+              </div>
+            </div>
+            <div class="upload-card-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <label class="form-label">App Title Name</label>
+                <input type="text" id="admin-pwa-title" value="StreamPulse TV" class="form-input" required>
+              </div>
+              <div>
+                <label class="form-label">App Short Name</label>
+                <input type="text" id="admin-pwa-short" value="StreamPulse" class="form-input" required>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 24px; text-align: right;">
+            <button type="submit" class="apk-download-btn" style="max-width: 320px; display: inline-flex;">
+              <i class="fa-solid fa-floppy-disk"></i> Save & Publish All App Releases
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ===================================================================
+           TAB 3: SYSTEM SETTINGS
+           =================================================================== -->
+      <div id="tab-settings" class="admin-tab-content hidden">
+        <div class="section-header" style="margin-bottom: 24px;">
+          <div class="section-title">
+            <h2><i class="fa-solid fa-gear"></i> System & Security Settings</h2>
+            <p>Manage admin passcode and website announcement preferences.</p>
+          </div>
+        </div>
+
+        <div class="admin-upload-card" style="max-width: 600px;">
+          <div class="upload-card-header">
+            <div class="app-card-icon" style="background: linear-gradient(135deg, #f43f5e, #e11d48);"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+              <h3>Admin Passcode Security</h3>
+              <p>Change admin login passcode</p>
+            </div>
+          </div>
+          <div class="upload-card-body">
+            <form id="change-passcode-form" style="display: flex; flex-direction: column; gap: 14px;">
+              <div>
+                <label class="form-label">Current Admin Passcode</label>
+                <input type="password" id="current-pass-input" placeholder="Current passcode (admin123)" required class="form-input">
+              </div>
+              <div>
+                <label class="form-label">New Admin Passcode</label>
+                <input type="password" id="new-pass-input" placeholder="Enter new secret passcode" required class="form-input">
+              </div>
+              <button type="submit" class="nav-btn primary" style="padding: 12px; justify-content: center;">
+                <i class="fa-solid fa-key"></i> Update Security Passcode
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add / Edit Channel Modal -->
+  <div class="modal-overlay hidden" id="channel-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-form-title"><i class="fa-solid fa-square-plus"></i> Add / Edit Channel</h2>
+        <button class="modal-close" id="close-channel-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="admin-channel-form" style="display: flex; flex-direction: column; gap: 16px;">
+          <input type="hidden" id="edit-channel-id">
+          
+          <div>
+            <label class="form-label">Channel Name *</label>
+            <input type="text" id="admin-ch-name" placeholder="e.g. Somoy TV HD" required class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Channel Logo URL (Image Link) *</label>
+            <input type="url" id="admin-ch-logo" placeholder="https://i.postimg.cc/..." required class="form-input">
+          </div>
+          <div>
+            <label class="form-label">Stream URL (.m3u8 or .mp4) *</label>
+            <input type="url" id="admin-ch-url" placeholder="https://example.com/stream/index.m3u8" required class="form-input">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label class="form-label">Category</label>
+              <select id="admin-ch-cat" class="form-input">
+                <option value="news">News</option>
+                <option value="sports">Sports</option>
+                <option value="movies">Movies</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="music">Music</option>
+                <option value="documentary">Documentary</option>
+                <option value="kids">Kids</option>
+                <option value="islamic">Islamic</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Quality Badge</label>
+              <input type="text" id="admin-ch-badge" value="LIVE HD" class="form-input">
+            </div>
+          </div>
+          <button type="submit" class="apk-download-btn" style="margin-top: 8px;">
+            <i class="fa-solid fa-floppy-disk"></i> Save Channel Data
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk M3U Import Modal -->
+  <div class="modal-overlay hidden" id="import-m3u-modal">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-file-import"></i> Bulk M3U Playlist Importer</h2>
+        <button class="modal-close" id="close-import-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="bulk-import-form" style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label class="form-label">Paste Raw #EXTM3U Playlist Text *</label>
+            <textarea id="m3u-raw-input" rows="8" placeholder="#EXTM3U&#10;#EXTINF:-1 tvg-logo='logo.png' group-title='News',Channel Name&#10;http://stream.url/index.m3u8" required class="form-input" style="font-family: monospace; font-size: 0.85rem;"></textarea>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" id="overwrite-all-check">
+            <label for="overwrite-all-check" style="font-size: 0.85rem; color: var(--live-red); font-weight: 600;">Overwrite and replace all existing channels</label>
+          </div>
+          <button type="submit" class="apk-download-btn" style="background: var(--primary-gradient);">
+            <i class="fa-solid fa-bolt"></i> Process & Sync Playlist
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="channels.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
