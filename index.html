@@ -44,6 +44,10 @@
 
       <!-- User Actions -->
       <div class="nav-actions">
+        <button id="download-app-btn" class="nav-btn primary accent-gradient" title="Download Mobile & Android TV App">
+          <i class="fa-solid fa-cloud-arrow-down"></i>
+          <span>Download App</span>
+        </button>
         <button id="add-channel-btn" class="nav-btn primary" title="Add Custom Channel / Logo">
           <i class="fa-solid fa-plus"></i>
           <span>Add Channel</span>
@@ -185,6 +189,71 @@
     </div>
   </div>
 
+  <!-- Download App Modal -->
+  <div class="modal-overlay hidden" id="download-app-modal">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-mobile-screen-button"></i> StreamPulse TV App Download</h2>
+        <button class="modal-close" id="close-download-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 20px;">
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Enjoy uninterrupted 4K Live TV streaming on your Android Phone, Tablet, or Smart TV. Select your device platform below:</p>
+
+        <!-- Download Cards Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+          
+          <!-- Android Mobile APK Card -->
+          <div class="app-download-card">
+            <div class="app-card-icon red-glow"><i class="fa-brands fa-android"></i></div>
+            <div class="app-card-info">
+              <h3>Android Mobile App</h3>
+              <p>Supports Android 6.0+ Phones & Tablets</p>
+              <div class="app-meta-tags">
+                <span><i class="fa-solid fa-tag"></i> v2.4.0</span>
+                <span><i class="fa-solid fa-file-code"></i> 18.5 MB</span>
+              </div>
+              <button class="apk-download-btn" id="dl-mobile-apk">
+                <i class="fa-solid fa-download"></i> Download Mobile APK
+              </button>
+            </div>
+          </div>
+
+          <!-- Android TV APK Card -->
+          <div class="app-download-card">
+            <div class="app-card-icon purple-glow"><i class="fa-solid fa-tv"></i></div>
+            <div class="app-card-info">
+              <h3>Android TV & Firestick</h3>
+              <p>Optimized for TV Remote Control & D-Pad</p>
+              <div class="app-meta-tags">
+                <span><i class="fa-solid fa-tag"></i> v2.4.0 TV</span>
+                <span><i class="fa-solid fa-file-code"></i> 21.2 MB</span>
+              </div>
+              <button class="apk-download-btn tv-btn" id="dl-tv-apk">
+                <i class="fa-solid fa-download"></i> Download TV APK
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PWA Quick Install Banner -->
+        <div class="pwa-install-banner" id="pwa-banner-box">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <i class="fa-solid fa-globe pwa-icon"></i>
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 700;">Install Web App (No APK Needed)</h4>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Install directly on your Chrome browser for desktop & mobile shortcut.</p>
+            </div>
+          </div>
+          <button id="pwa-install-btn" class="nav-btn" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);">
+            <i class="fa-solid fa-plus"></i> Install PWA
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
@@ -209,7 +278,15 @@
           <li><a href="#" data-filter="entertainment">Entertainment</a></li>
         </ul>
       </div>
-    
+      <div class="footer-links">
+        <h4>Technology</h4>
+        <ul>
+          <li><span>HTML5 & CSS3 Glassmorphism</span></li>
+          <li><span>HLS.js Adaptive Bitrate</span></li>
+          <li><span>Smart TV Remote (D-Pad)</span></li>
+        </ul>
+      </div>
+    </div>
     <div class="footer-bottom">
       <p>&copy; 2026 StreamPulse TV 2.0. All Rights Reserved.</p>
     </div>
