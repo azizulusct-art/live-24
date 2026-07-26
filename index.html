@@ -17,8 +17,10 @@
   <!-- Custom Styles -->
   <link rel="stylesheet" href="styles.css">
   
-  <!-- HLS.js Library -->
+  <!-- HLS.js & Plyr Ultra Video Player Engine -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 </head>
 <body>
 
@@ -35,19 +37,18 @@
         </div>
       </div>
 
-      <!-- Search Input -->
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input type="text" id="search-input" placeholder="Search 200+ channels, sports, news, dramas..." autocomplete="off">
-        <button id="clear-search" class="clear-btn hidden"><i class="fa-solid fa-xmark"></i></button>
+      <!-- Middle Pill Theme Switcher -->
+      <div class="theme-switch-pill" id="theme-pill-switch">
+        <button class="theme-pill-btn active" data-theme="dark">
+          <i class="fa-solid fa-moon"></i> <span>Dark</span>
+        </button>
+        <button class="theme-pill-btn" data-theme="light">
+          <i class="fa-solid fa-sun"></i> <span>Light</span>
+        </button>
       </div>
 
       <!-- User Actions -->
       <div class="nav-actions">
-        <a href="admin.html" class="nav-btn" title="Admin Control Panel" style="text-decoration: none; border-color: rgba(255,255,255,0.15);">
-          <i class="fa-solid fa-user-shield"></i>
-          <span>Admin</span>
-        </a>
         <button id="download-app-btn" class="nav-btn primary accent-gradient" title="Download Mobile & Android TV App">
           <i class="fa-solid fa-cloud-arrow-down"></i>
           <span>Download App</span>
@@ -56,11 +57,13 @@
           <i class="fa-solid fa-plus"></i>
           <span>Add Channel</span>
         </button>
-        <button id="fav-toggle-filter" class="nav-btn" title="View Favorite Channels">
-          <i class="fa-solid fa-heart"></i>
-          <span>Favorites</span>
-          <span id="fav-count-badge" class="badge">0</span>
-        </button>
+      </div>
+
+      <!-- Search Input (Right Aligned) -->
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="search-input" placeholder="Search 200+ channels, sports, news, dramas..." autocomplete="off">
+        <button id="clear-search" class="clear-btn hidden"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
   </header>
@@ -274,12 +277,16 @@
         <p>Ultra High Definition 24/7 Live Television Platform with adaptive bitrate streaming and global IPTV channel index.</p>
       </div>
       <div class="footer-links">
-        <h4>Categories</h4>
-        <ul>
-          <li><a href="#" data-filter="news">Live News</a></li>
-          <li><a href="#" data-filter="sports">Sports Arena</a></li>
-          <li><a href="#" data-filter="movies">Cinema Movies</a></li>
-          <li><a href="#" data-filter="entertainment">Entertainment</a></li>
+        <h4>Explore Categories</h4>
+        <ul style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px;">
+          <li><a href="#channels-section" data-filter="news"><i class="fa-solid fa-newspaper"></i> Live News</a></li>
+          <li><a href="#channels-section" data-filter="sports"><i class="fa-solid fa-trophy"></i> Sports Arena</a></li>
+          <li><a href="#channels-section" data-filter="movies"><i class="fa-solid fa-film"></i> Cinema Movies</a></li>
+          <li><a href="#channels-section" data-filter="entertainment"><i class="fa-solid fa-masks-theater"></i> Entertainment</a></li>
+          <li><a href="#channels-section" data-filter="music"><i class="fa-solid fa-music"></i> Live Music</a></li>
+          <li><a href="#channels-section" data-filter="documentary"><i class="fa-solid fa-feather-pointed"></i> Documentary</a></li>
+          <li><a href="#channels-section" data-filter="kids"><i class="fa-solid fa-child"></i> Kids World</a></li>
+          <li><a href="#channels-section" data-filter="islamic"><i class="fa-solid fa-kaaba"></i> Islamic TV</a></li>
         </ul>
       </div>
       <div class="footer-links">
