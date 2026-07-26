@@ -458,38 +458,81 @@ document.addEventListener("DOMContentLoaded", () => {
   const dlTvApk = document.getElementById("dl-tv-apk");
   const pwaInstallBtn = document.getElementById("pwa-install-btn");
 
+  function getAppReleaseConfig() {
+    try {
+      const saved = localStorage.getItem("streampulse_app_releases");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      mobileVer: "v2.4.0", mobileSize: "18.5 MB", mobileUrl: "",
+      tvVer: "v2.4.0 TV", tvSize: "21.2 MB", tvUrl: "",
+      pwaTitle: "StreamPulse TV", pwaShort: "StreamPulse"
+    };
+  }
+
+  function syncAppReleasesToModal() {
+    const config = getAppReleaseConfig();
+    const mobileTags = document.querySelectorAll("#download-app-modal .app-download-card:nth-child(1) .app-meta-tags span");
+    if (mobileTags.length >= 2) {
+      mobileTags[0].innerHTML = `<i class="fa-solid fa-tag"></i> ${config.mobileVer}`;
+      mobileTags[1].innerHTML = `<i class="fa-solid fa-file-code"></i> ${config.mobileSize}`;
+    }
+
+    const tvTags = document.querySelectorAll("#download-app-modal .app-download-card:nth-child(2) .app-meta-tags span");
+    if (tvTags.length >= 2) {
+      tvTags[0].innerHTML = `<i class="fa-solid fa-tag"></i> ${config.tvVer}`;
+      tvTags[1].innerHTML = `<i class="fa-solid fa-file-code"></i> ${config.tvSize}`;
+    }
+  }
+
   if (downloadAppBtn && downloadAppModal) {
-    downloadAppBtn.addEventListener("click", () => downloadAppModal.classList.remove("hidden"));
+    downloadAppBtn.addEventListener("click", () => {
+      syncAppReleasesToModal();
+      downloadAppModal.classList.remove("hidden");
+    });
     if (closeDownloadModal) closeDownloadModal.addEventListener("click", () => downloadAppModal.classList.add("hidden"));
     downloadAppModal.addEventListener("click", (e) => {
       if (e.target === downloadAppModal) downloadAppModal.classList.add("hidden");
     });
   }
 
-  function triggerDummyDownload(filename) {
-    const dummyContent = "StreamPulse TV Android Application Installer Package v2.4.0";
-    const blob = new Blob([dummyContent], { type: "application/vnd.android.package-archive" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  function triggerDownloadUrl(url, fallbackFilename) {
+    if (url && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:"))) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fallbackFilename;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      // Fallback blob installer trigger
+      const dummyContent = "StreamPulse TV Android Application Installer Package";
+      const blob = new Blob([dummyContent], { type: "application/vnd.android.package-archive" });
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = fallbackFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    }
   }
 
   if (dlMobileApk) {
     dlMobileApk.addEventListener("click", () => {
-      showToast("Downloading StreamPulse Mobile APK (18.5 MB)... 🚀", "success");
-      triggerDummyDownload("StreamPulse_Mobile_v2.4.0.apk");
+      const config = getAppReleaseConfig();
+      showToast(`Downloading StreamPulse Mobile APK (${config.mobileVer})... 🚀`, "success");
+      triggerDownloadUrl(config.mobileUrl, `StreamPulse_Mobile_${config.mobileVer}.apk`);
     });
   }
 
   if (dlTvApk) {
     dlTvApk.addEventListener("click", () => {
-      showToast("Downloading StreamPulse Android TV APK (21.2 MB)... 📺", "success");
-      triggerDummyDownload("StreamPulse_TV_Edition_v2.4.0.apk");
+      const config = getAppReleaseConfig();
+      showToast(`Downloading StreamPulse Android TV APK (${config.tvVer})... 📺`, "success");
+      triggerDownloadUrl(config.tvUrl, `StreamPulse_TV_${config.tvVer}.apk`);
     });
   }
 
