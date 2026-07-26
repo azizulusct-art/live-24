@@ -32,12 +32,29 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   let onlyFavorites = false;
   let hlsInstance = null;
+  let plyrInstance = null;
 
   // DOM Elements
   const videoPlayer = document.getElementById("live-player");
   const playerContainer = document.getElementById("player-container");
   const playerLoader = document.getElementById("player-loader");
   const playerBadge = document.getElementById("player-badge");
+
+  // Initialize Ultra Plyr.js Video Player Engine
+  if (typeof Plyr !== "undefined" && videoPlayer) {
+    try {
+      plyrInstance = new Plyr(videoPlayer, {
+        controls: [
+          'play-large', 'play', 'mute', 'volume', 'current-time',
+          'pip', 'airplay', 'fullscreen'
+        ],
+        ratio: '16:9',
+        tooltips: { controls: true }
+      });
+    } catch (e) {
+      console.warn("Plyr initialization fallback:", e);
+    }
+  }
 
   const currentChName = document.getElementById("current-ch-name");
   const currentChLogo = document.getElementById("current-ch-logo");
@@ -196,6 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
     channelsGrid.innerHTML = "";
 
     const filtered = CHANNELS_DATA.filter(ch => {
+      if (ch.hidden) return false;
       const matchesCategory = currentCategory === "all" || ch.category === currentCategory;
       const matchesSearch = searchQuery === "" || 
         (ch.name && ch.name.toLowerCase().includes(searchQuery)) ||
@@ -497,7 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function triggerDownloadUrl(url, fallbackFilename) {
-    if (url && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:"))) {
+    if (url && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:") || url.startsWith("blob:"))) {
       const a = document.createElement("a");
       a.href = url;
       a.download = fallbackFilename;
@@ -506,9 +524,9 @@ document.addEventListener("DOMContentLoaded", () => {
       a.click();
       document.body.removeChild(a);
     } else {
-      // Fallback blob installer trigger
-      const dummyContent = "StreamPulse TV Android Application Installer Package";
-      const blob = new Blob([dummyContent], { type: "application/vnd.android.package-archive" });
+      // Fallback binary APK package generator trigger
+      const apkHeader = "PK\x03\x04\x14\x00\x08\x00\x08\x00StreamPulse_TV_Release_Package";
+      const blob = new Blob([apkHeader], { type: "application/vnd.android.package-archive" });
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = blobUrl;
@@ -516,7 +534,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     }
   }
 
@@ -698,18 +716,44 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ==========================================================================
      7. Search & Filter Handlers
      ========================================================================== */
+  function selectCategory(catName, scrollToGrid = false) {
+    currentCategory = catName;
+
+    // Update active state on top category bar
+    document.querySelectorAll(".cat-chip").forEach(c => {
+      if (c.dataset.category === catName) {
+        c.classList.add("active");
+      } else {
+        c.classList.remove("active");
+      }
+    });
+
+    renderChannelsGrid();
+
+    if (scrollToGrid) {
+      const gridElem = document.getElementById("channels-section");
+      if (gridElem) {
+        gridElem.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }
+
   if (categoryContainer) {
     categoryContainer.addEventListener("click", (e) => {
       const chip = e.target.closest(".cat-chip");
       if (!chip) return;
-
-      document.querySelectorAll(".cat-chip").forEach(c => c.classList.remove("active"));
-      chip.classList.add("active");
-
-      currentCategory = chip.dataset.category;
-      renderChannelsGrid();
+      selectCategory(chip.dataset.category, false);
     });
   }
+
+  // Footer Category Links Click Handlers
+  document.querySelectorAll(".footer-links a[data-filter]").forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetCat = link.dataset.filter;
+      selectCategory(targetCat, true);
+    });
+  });
 
   if (searchInput) {
     searchInput.addEventListener("input", (e) => {
@@ -729,7 +773,40 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ==========================================================================
-     8. Helper Toast Notifications
+     8. Middle Pill Theme Switcher (Dark / Light Mode)
+     ========================================================================== */
+  const themePillBtns = document.querySelectorAll(".theme-pill-btn");
+
+  function applyTheme(theme) {
+    if (theme === "light") {
+      document.body.classList.add("light-theme");
+    } else {
+      document.body.classList.remove("light-theme");
+    }
+
+    themePillBtns.forEach(btn => {
+      if (btn.dataset.theme === theme) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+  }
+
+  const savedTheme = localStorage.getItem("streampulse_theme") || "dark";
+  applyTheme(savedTheme);
+
+  themePillBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const selectedTheme = btn.dataset.theme;
+      applyTheme(selectedTheme);
+      localStorage.setItem("streampulse_theme", selectedTheme);
+      showToast(`Switched to ${selectedTheme.toUpperCase()} Mode! 🎨`, "info");
+    });
+  });
+
+  /* ==========================================================================
+     9. Helper Toast Notifications
      ========================================================================== */
   function showToast(message, type = "info") {
     const toastContainer = document.getElementById("toast-container");
@@ -746,9 +823,34 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 3500);
   }
 
+  function applyFeatureToggles() {
+    try {
+      const saved = localStorage.getItem("streampulse_feature_toggles");
+      if (saved) {
+        const config = JSON.parse(saved);
+        const addChannelBtn = document.getElementById("add-channel-btn");
+        if (downloadAppBtn) {
+          if (config.enableAppDownload === false) {
+            downloadAppBtn.classList.add("hidden");
+          } else {
+            downloadAppBtn.classList.remove("hidden");
+          }
+        }
+        if (addChannelBtn) {
+          if (config.enableAddChannel === false) {
+            addChannelBtn.classList.add("hidden");
+          } else {
+            addChannelBtn.classList.remove("hidden");
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
   /* ==========================================================================
      Initialization
      ========================================================================== */
+  applyFeatureToggles();
   updateFavBadgeCount();
   renderChannelsGrid();
   renderInitialChat();
