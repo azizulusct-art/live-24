@@ -48,11 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const stored = localStorage.getItem("streampulse_admin_channels");
       if (stored) {
         adminChannels = JSON.parse(stored);
-      } else {
+      } else if (typeof CHANNELS_DATA !== "undefined") {
         adminChannels = [...CHANNELS_DATA];
+      } else {
+        adminChannels = [];
       }
     } catch (e) {
-      adminChannels = [...CHANNELS_DATA];
+      adminChannels = (typeof CHANNELS_DATA !== "undefined" ? [...CHANNELS_DATA] : []);
     }
   }
 
@@ -116,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderStats();
     renderTable();
     loadAppReleasesConfig();
+    loadFeatureTogglesConfig();
   }
 
   function renderStats() {
@@ -163,6 +166,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = document.createElement("tr");
       const safeLogo = ch.logo || `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"><rect width="100%" height="100%" fill="%231e2942"/><text x="50%" y="55%" fill="%23fff" text-anchor="middle">TV</text></svg>`;
 
+      const isHidden = !!ch.hidden;
+      const statusBadge = isHidden 
+        ? `<span class="badge" style="background: #64748b; color: #fff;">HIDDEN</span>` 
+        : `<span class="badge">${ch.badge || 'LIVE HD'}</span>`;
+
       tr.innerHTML = `
         <td><img src="${safeLogo}" alt="${ch.name}" class="admin-table-logo" onerror="this.src='https://via.placeholder.com/40';"></td>
         <td>
@@ -170,21 +178,36 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="font-size: 0.75rem; color: var(--text-muted);">${ch.currentProgram || ch.name}</div>
         </td>
         <td><span class="cat-tag-pill">${ch.category || 'entertainment'}</span></td>
-        <td><span class="badge">${ch.badge || 'LIVE HD'}</span></td>
-        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; color: var(--text-dim);">${ch.url}</td>
+        <td>${statusBadge}</td>
+        <td style="max-width: 230px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; color: var(--text-dim);">${ch.url}</td>
         <td>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-action toggle-visibility ${isHidden ? 'is-hidden' : ''}" data-id="${ch.id}" title="${isHidden ? 'Show on Public Site' : 'Hide from Public Site'}">
+              <i class="fa-solid fa-${isHidden ? 'eye-slash' : 'eye'}"></i>
+            </button>
             <button class="btn-action edit" data-id="${ch.id}" title="Edit Channel"><i class="fa-solid fa-pen"></i></button>
             <button class="btn-action delete" data-id="${ch.id}" title="Delete Channel"><i class="fa-solid fa-trash"></i></button>
           </div>
         </td>
       `;
 
+      tr.querySelector(".btn-action.toggle-visibility").addEventListener("click", () => toggleChannelVisibility(ch.id, ch.name));
       tr.querySelector(".btn-action.edit").addEventListener("click", () => openEditModal(ch));
       tr.querySelector(".btn-action.delete").addEventListener("click", () => deleteChannel(ch.id, ch.name));
 
       channelsTbody.appendChild(tr);
     });
+  }
+
+  function toggleChannelVisibility(id, name) {
+    const idx = adminChannels.findIndex(c => c.id === id);
+    if (idx !== -1) {
+      adminChannels[idx].hidden = !adminChannels[idx].hidden;
+      const isNowHidden = adminChannels[idx].hidden;
+      saveData();
+      showToast(isNowHidden ? `"${name}" is now HIDDEN from public website.` : `"${name}" is now VISIBLE on website.`, isNowHidden ? "warning" : "success");
+      renderDashboard();
+    }
   }
 
   /* 4. CRUD Handlers */
@@ -392,51 +415,130 @@ document.addEventListener("DOMContentLoaded", () => {
         const config = JSON.parse(saved);
         if (document.getElementById("admin-mobile-ver") && config.mobileVer) document.getElementById("admin-mobile-ver").value = config.mobileVer;
         if (document.getElementById("admin-mobile-size") && config.mobileSize) document.getElementById("admin-mobile-size").value = config.mobileSize;
-        if (document.getElementById("admin-mobile-url") && config.mobileUrl) document.getElementById("admin-mobile-url").value = config.mobileUrl;
+
+        const mobileUrlInput = document.getElementById("admin-mobile-url");
+        if (mobileUrlInput && config.mobileUrl) {
+          if (config.mobileUrl.startsWith("http://") || config.mobileUrl.startsWith("https://")) {
+            mobileUrlInput.value = config.mobileUrl;
+          } else if (config.mobileUrl.startsWith("data:")) {
+            mobileUrlInput.value = "";
+            const mobileFileName = document.getElementById("mobile-file-name");
+            if (mobileFileName) mobileFileName.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> Uploaded Mobile APK File Active (${config.mobileSize || "Saved"})`;
+          }
+        }
 
         if (document.getElementById("admin-tv-ver") && config.tvVer) document.getElementById("admin-tv-ver").value = config.tvVer;
         if (document.getElementById("admin-tv-size") && config.tvSize) document.getElementById("admin-tv-size").value = config.tvSize;
-        if (document.getElementById("admin-tv-url") && config.tvUrl) document.getElementById("admin-tv-url").value = config.tvUrl;
+
+        const tvUrlInput = document.getElementById("admin-tv-url");
+        if (tvUrlInput && config.tvUrl) {
+          if (config.tvUrl.startsWith("http://") || config.tvUrl.startsWith("https://")) {
+            tvUrlInput.value = config.tvUrl;
+          } else if (config.tvUrl.startsWith("data:")) {
+            tvUrlInput.value = "";
+            const tvFileName = document.getElementById("tv-file-name");
+            if (tvFileName) tvFileName.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> Uploaded TV APK File Active (${config.tvSize || "Saved"})`;
+          }
+        }
 
         if (document.getElementById("admin-pwa-title") && config.pwaTitle) document.getElementById("admin-pwa-title").value = config.pwaTitle;
         if (document.getElementById("admin-pwa-short") && config.pwaShort) document.getElementById("admin-pwa-short").value = config.pwaShort;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn("loadAppReleasesConfig error:", e);
+    }
+  }
+
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
   }
 
   if (adminAppReleaseForm) {
-    adminAppReleaseForm.addEventListener("submit", (e) => {
+    adminAppReleaseForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       let mobileUrl = document.getElementById("admin-mobile-url").value.trim();
+      let mobileSize = document.getElementById("admin-mobile-size").value.trim() || "18.5 MB";
+      
       if (adminMobileFile && adminMobileFile.files.length > 0) {
         const file = adminMobileFile.files[0];
-        mobileUrl = URL.createObjectURL(file);
+        mobileSize = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+        showToast("Encoding uploaded Mobile APK file...", "info");
+        try {
+          mobileUrl = await readFileAsDataURL(file);
+        } catch (err) {
+          console.error("FileReader error:", err);
+        }
       }
 
       let tvUrl = document.getElementById("admin-tv-url").value.trim();
+      let tvSize = document.getElementById("admin-tv-size").value.trim() || "21.2 MB";
+
       if (adminTvFile && adminTvFile.files.length > 0) {
         const file = adminTvFile.files[0];
-        tvUrl = URL.createObjectURL(file);
+        tvSize = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+        showToast("Encoding uploaded TV APK file...", "info");
+        try {
+          tvUrl = await readFileAsDataURL(file);
+        } catch (err) {
+          console.error("FileReader error:", err);
+        }
       }
 
       const releaseData = {
         mobileVer: document.getElementById("admin-mobile-ver").value.trim() || "v2.4.0",
-        mobileSize: document.getElementById("admin-mobile-size").value.trim() || "18.5 MB",
+        mobileSize: mobileSize,
         mobileUrl: mobileUrl,
         tvVer: document.getElementById("admin-tv-ver").value.trim() || "v2.4.0 TV",
-        tvSize: document.getElementById("admin-tv-size").value.trim() || "21.2 MB",
+        tvSize: tvSize,
         tvUrl: tvUrl,
         pwaTitle: document.getElementById("admin-pwa-title").value.trim() || "StreamPulse TV",
         pwaShort: document.getElementById("admin-pwa-short").value.trim() || "StreamPulse"
       };
 
-      localStorage.setItem("streampulse_app_releases", JSON.stringify(releaseData));
-      showToast("App Releases & APK Download links saved & published! 🎉", "success");
+      try {
+        localStorage.setItem("streampulse_app_releases", JSON.stringify(releaseData));
+        showToast("App Releases & APK Download links published! 🎉", "success");
+      } catch (err) {
+        showToast("File size is too large for LocalStorage. Please enter direct APK download link URL instead.", "warning");
+      }
     });
   }
 
-  /* 7. Passcode Security Form */
+  /* 7. Public Feature Toggles */
+  const featureTogglesForm = document.getElementById("feature-toggles-form");
+  const toggleDownloadApp = document.getElementById("toggle-download-app");
+  const toggleAddChannel = document.getElementById("toggle-add-channel");
+
+  function loadFeatureTogglesConfig() {
+    try {
+      const saved = localStorage.getItem("streampulse_feature_toggles");
+      if (saved) {
+        const config = JSON.parse(saved);
+        if (toggleDownloadApp) toggleDownloadApp.checked = config.enableAppDownload !== false;
+        if (toggleAddChannel) toggleAddChannel.checked = config.enableAddChannel !== false;
+      }
+    } catch (e) {}
+  }
+
+  if (featureTogglesForm) {
+    featureTogglesForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const config = {
+        enableAppDownload: toggleDownloadApp ? toggleDownloadApp.checked : true,
+        enableAddChannel: toggleAddChannel ? toggleAddChannel.checked : true
+      };
+      localStorage.setItem("streampulse_feature_toggles", JSON.stringify(config));
+      showToast("Public Website Feature Toggles saved! 🎉", "success");
+    });
+  }
+
+  /* 8. Passcode Security Form */
   const changePasscodeForm = document.getElementById("change-passcode-form");
   if (changePasscodeForm) {
     changePasscodeForm.addEventListener("submit", (e) => {
